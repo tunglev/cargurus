@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install flask pytest requests
+
+      - name: Run tests
+        run: pytest test_app.py -v
+
+  build:
+    needs: test        # only runs if tests pass
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t demo-app:${{ github.sha }} .
+
+      - name: Smoke test container
+        run: |
+          docker run -d -p 5000:5000 --name demo demo-app:${{ github.sha }}
+          sleep 3
+          curl --fail http://localhost:5000/health
+          docker stop demo
