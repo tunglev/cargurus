@@ -34,3 +34,5 @@ jobs:
           sleep 3
           curl --fail http://localhost:5000/health
           docker stop demo
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
